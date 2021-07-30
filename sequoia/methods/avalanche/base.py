@@ -68,10 +68,7 @@ class WandBLogger(_WandBLogger):
         except ImportError:
             raise ImportError(
                 'Please run "pip install wandb" to install wandb')
-        if wandb.run:
-            self.wandb = wandb.run
-        else:
-            self.wandb = wandb
+        self.wandb = wandb
 
     def args_parse(self):
         self.init_kwargs = {"project": self.project_name, "name": self.run_name}
@@ -79,7 +76,6 @@ class WandBLogger(_WandBLogger):
             self.init_kwargs.update(self.params)
 
     def before_run(self):
-        pass # Don't do anything, because SEquoia already creates the wandb logger.
         if self.wandb is None:
             self.import_wandb()
         if self.init_kwargs:
