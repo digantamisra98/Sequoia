@@ -909,10 +909,11 @@ def limit_to_available_classes(logits: Tensor, task_labels: Tensor, classes_in_e
     # logits = [] 
     for logit, task_label in zip(logits, task_labels):
         t = task_label.item()
-        eligible_classes = torch.as_tensor(classes_in_each_present_task[t], dtype=int, device=logits.device)
+        eligible_classes_list = classes_in_each_present_task[t]
+        eligible_classes = torch.as_tensor(eligible_classes_list, dtype=int, device=logits.device)
 
         is_eligible = elligible_masks[t]
-        
+
         if not is_eligible.any():
             # Return a random prediction from the set of possible classes, since
             # the network has fewer outputs than there are classes.
@@ -923,6 +924,8 @@ def limit_to_available_classes(logits: Tensor, task_labels: Tensor, classes_in_e
             masked_logit = logit[is_eligible]
             y_pred_without_offset = masked_logit.argmax(-1)
             y_pred = eligible_classes[y_pred_without_offset]
-        y_preds.append(y_pred)
+
+        assert y_pred.item() in eligible_classes_list
+        y_preds.append(y_pred.reshape(()))  # Just to make sure they all have the same shape.
 
     return torch.stack(y_preds)
